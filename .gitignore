@@ -1,0 +1,6 @@
+dme/__pycache__/*
+*.pyc
+dist/
+dme.egg-info/
+.hypothesis/*
+build/*
