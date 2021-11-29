@@ -10,10 +10,14 @@ Inspiration taken from [atl/dnsmadeeasy-python](https://github.com/atl/dnsmadeea
 from dme import DMECLient
 
 client = DMEClient("API_KEY", "SECRET_KEY")
-domains = client.list_domains()
+domains = client.list_managed_domains()
 print(domains)
 
+domain_id = client.get_domain_id("mycoolwebsite.com")
+client.create_record(domain_id, "coolsubdomain", record_type="A", value="1.2.3.4", ttl=60)
 ```
+
+More examples can also be found in the tests.
 
 ## Development
 
