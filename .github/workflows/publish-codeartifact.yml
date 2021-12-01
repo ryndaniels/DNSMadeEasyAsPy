@@ -1,0 +1,38 @@
+---
+
+name: Publish to CodeArtifact
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: publish-to-codeartifact
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log into CodeArtifact
+        run: |
+          aws codeartifact login --tool twine --repository pypi_mirror --domain ${{ secrets.CA_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }}
+          echo "TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain ${{ secrets.CA_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} --query authorizationToken --output text`" >> $GITHUB_ENV
+          echo "TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain ${{ secrets.CA_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} --repository pypi_mirror --format pypi --query repositoryEndpoint --output text`" >> $GITHUB_ENV
+
+      - name: Build and Upload
+        env:
+          TWINE_USERNAME: "aws"
+        run: |
+          python setup.py sdist
+          python -m pip install twine
+          twine upload --repository pypi_mirror dist/*

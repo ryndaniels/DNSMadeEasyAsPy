@@ -13,8 +13,8 @@ def test_managed_domains():
     # Get the initial number here since people might not start with 0 domains
 
     domain_name = f"test-{petname.Generate(3)}.com"
+
     response = client.create_managed_domain(domain_name)
-    print(response)
     assert response["name"] == domain_name, "The domain should be named in the response"
     assert isinstance(
         response["created"], int
@@ -23,26 +23,21 @@ def test_managed_domains():
     domains = client.list_managed_domains()
     assert len(domains) == (num_domains + 1), "One domain should have been created"
     domain_id = client.get_domain_id(domain_name)
-    assert domain_id.isnumeric(), "The domain ID should exist and be numeric"
+    assert type(domain_id) == int, "The domain ID should exist and be numeric"
 
     response = client.delete_managed_domain(domain_name)
     assert response == {}, "There should be no output on successful delete"
 
-    domain_id = client.get_domain_id(domain_name)
-    assert domain_id == None, "The domain should have been deleted"
-    # TODO figure out the asserts here once I actually CAN delete the domain
-    # The problem is that domains seems to stay "creating" (and thus can't be deleted) for
-    # A While, at least, which will make testing more difficult
-    # Waiting on DME support to help with this for the sandbox, since they say in prod it shouldn't take more
-    # than 15-20 minutes and it's been ~3 days in the sandbox
+    domain = client.get_domain_by_name(domain_name)
+    assert domain["pendingActionId"] == 3, "The pending action should be deletion"
 
 
 def test_records():
     """Tests API calls to create, modify, and delete records"""
 
     client = DMEClient(os.getenv("DME_API_KEY"), os.getenv("DME_SECRET_KEY"))
-    domain_name = "verycoolandrealexample.com"
-    # TODO once deletion works in the sandbox, create a random pet domain instead
+    domain_name = f"test-{petname.Generate(3)}.com"
+    client.create_managed_domain(domain_name)
 
     response = client.create_record(
         domain_name, name="testhost", record_type="A", value="10.1.1.1", ttl=500
@@ -79,3 +74,5 @@ def test_records():
 
     records = client.get_records_by_name(domain_name, "testhost")
     assert len(records["data"]) == 0, "The record should have been deleted"
+
+    client.delete_managed_domain(domain_name)

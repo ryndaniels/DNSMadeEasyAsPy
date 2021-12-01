@@ -13,9 +13,8 @@ class DMEClient:
             raise KeyError("secret_key missing")
         self.api_key = api_key
         self.secret_key = secret_key
-        self.base_url = "http://api.sandbox.dnsmadeeasy.com/V2.0"
-        # self.base_url = "http://api.dnsmadeeasy.com/V2.0"
-        # TODO uncomment this after testing
+        self.base_url = "http://api.dnsmadeeasy.com/V2.0"
+        # self.base_url = "http://api.sandbox.dnsmadeeasy.com/V2.0" Uncomment this for testing
 
     def _headers(self):
         now = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
@@ -124,7 +123,7 @@ class DMEClient:
         name: str,
         record_type: str,
         value: str,
-        ttl: int,
+        ttl: int = 86400,
         gtdLocation: str = "DEFAULT",
     ):
         if not domain.isnumeric():
@@ -155,7 +154,7 @@ class DMEClient:
         name: str,
         record_type: str,
         value: str,
-        ttl: int,
+        ttl: int = 86400,
         gtdLocation: str = "DEFAULT",
     ):
         if not domain.isnumeric():
